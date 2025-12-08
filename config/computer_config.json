@@ -1,0 +1,22 @@
+{
+  "computer_name": "NtandoComputer Enhanced",
+  "version": "2.0.0",
+  "deployed_apps": {},
+  "system_stats": {
+    "total_apps": 0,
+    "html_apps": 0,
+    "nodejs_apps": 0,
+    "eternal_apps": 0,
+    "uptime": 1765229196.6531303,
+    "total_users": 0,
+    "active_users": 0
+  },
+  "features": {
+    "eternal_persistence": true,
+    "custom_domains": true,
+    "analytics": true,
+    "backups": true,
+    "marketplace": true,
+    "collaboration": true
+  }
+}

@@ -1,0 +1,23 @@
+services:
+  # Web Service
+  - type: web
+    name: ntandocomputer
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT computer:app
+    healthCheck:
+      path: /api/system/info
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: FLASK_ENV
+        value: production
+    disk:
+      name: ntandocomputer-storage
+      mountPath: /workspace/ntandocomputer/storage
+      sizeGB: 1

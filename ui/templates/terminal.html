@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal - NtandoComputer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 10px 10px 0 0;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+
+        h1 {
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .terminal-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 13px;
+            font-weight: 500;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #764ba2;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .terminal-wrapper {
+            flex: 1;
+            background: #1a1a1a;
+            border-radius: 0 0 10px 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .terminal-header {
+            background: #2a2a2a;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .terminal-dot.red { background: #ff5f57; }
+        .terminal-dot.yellow { background: #ffbd2e; }
+        .terminal-dot.green { background: #28ca42; }
+
+        .terminal-title {
+            flex: 1;
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+        }
+
+        .terminal-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .terminal-output {
+            color: #00ff00;
+            margin-bottom: 10px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .terminal-line {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .terminal-prompt {
+            color: #00ff00;
+            margin-right: 8px;
+        }
+
+        .terminal-input {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            outline: none;
+            flex: 1;
+            font-family: inherit;
+            font-size: inherit;
+        }
+
+        .terminal-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background: #00ff00;
+            animation: blink 1s infinite;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .command-history {
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+
+        .error-text {
+            color: #ff6b6b;
+        }
+
+        .warning-text {
+            color: #ffd93d;
+        }
+
+        .info-text {
+            color: #6bcf7f;
+        }
+
+        .success-text {
+            color: #4dabf7;
+        }
+
+        .help-text {
+            color: #adb5bd;
+            font-style: italic;
+        }
+
+        .ascii-art {
+            color: #667eea;
+            font-size: 12px;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+
+        .command-suggestions {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            color: #667eea;
+            font-size: 13px;
+        }
+
+        .suggestion-item {
+            padding: 3px 0;
+            cursor: pointer;
+        }
+
+        .suggestion-item:hover {
+            color: #764ba2;
+        }
+
+        .sidebar {
+            width: 200px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            margin-right: 20px;
+            color: white;
+        }
+
+        .sidebar h3 {
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #667eea;
+        }
+
+        .command-list {
+            list-style: none;
+        }
+
+        .command-list li {
+            padding: 5px 0;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            font-size: 12px;
+        }
+
+        .command-list li:hover {
+            color: #667eea;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .file-explorer {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: white;
+            font-size: 13px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 3px 0;
+            cursor: pointer;
+        }
+
+        .file-icon {
+            margin-right: 8px;
+        }
+
+        .file-name {
+            flex: 1;
+        }
+
+        .file-size {
+            color: #999;
+            font-size: 11px;
+        }
+
+        .status-bar {
+            background: #2a2a2a;
+            padding: 8px 15px;
+            border-top: 1px solid #3a3a3a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #999;
+            font-size: 12px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #28ca42;
+        }
+
+        /* Scrollbar styling */
+        .terminal-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .terminal-body::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        .terminal-body::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        .terminal-body::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+            
+            .terminal-body {
+                font-size: 12px;
+                padding: 15px;
+            }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⌨️ Terminal</h1>
+            <div class="terminal-controls">
+                <button class="btn btn-secondary" onclick="clearTerminal()">Clear</button>
+                <button class="btn btn-secondary" onclick="showHelp()">Help</button>
+                <button class="btn btn-primary" onclick="showCommandHistory()">History</button>
+                <a href="/" class="btn btn-secondary">← Desktop</a>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="terminal-wrapper">
+                <div class="terminal-header">
+                    <div class="terminal-dot red" onclick="closeTerminal()"></div>
+                    <div class="terminal-dot yellow" onclick="minimizeTerminal()"></div>
+                    <div class="terminal-dot green"></div>
+                    <div class="terminal-title">ntando@computer:~</div>
+                </div>
+
+                <div class="terminal-body" id="terminalBody">
+                    <div class="ascii-art">
+    ██████╗ ██████╗ ███████╗███╗   ██╗███████╗██╗ ██████╗ ██╗  ██╗
+    ██╔══██╗██╔══██╗██╔════╝████╗  ██║██╔════╝██║██╔════╝ ██║ ██╔╝
+    ██████╔╝██████╔╝█████╗  ██╔██╗ ██║███████╗██║██║  ███╗█████╔╝ 
+    ██╔══██╗██╔══██╗██╔══╝  ██║╚██╗██║╚════██║██║██║   ██║██╔═██╗ 
+    ██║  ██║██████╔╝███████╗██║ ╚████║███████║██║╚██████╔╝██║  ██╗
+    ╚═╝  ╚═╝╚═════╝ ╚══════╝╚═╝  ╚═══╝╚══════╝╚═╝ ╚═════╝ ╚═╝  ╚═╝
+                    
+                    <span class="info-text">Welcome to NtandoComputer Terminal v1.0.0</span>
+                    <span class="help-text">Type 'help' for available commands</span>
+                    </div>
+                </div>
+
+                <div class="status-bar">
+                    <div class="status-item">
+                        <div class="status-indicator"></div>
+                        <span>Connected</span>
+                    </div>
+                    <div class="status-item">
+                        <span id="currentTime">00:00:00</span>
+                    </div>
+                    <div class="status-item">
+                        <span id="commandCount">0 commands</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class Terminal {
+            constructor() {
+                this.currentDirectory = '~';
+                this.commandHistory = [];
+                this.historyIndex = -1;
+                this.commandCount = 0;
+                this.output = document.getElementById('terminalBody');
+                this.setupEventListeners();
+                this.updateClock();
+                this.addNewLine();
+            }
+
+            setupEventListeners() {
+                document.addEventListener('keydown', (e) => this.handleKeyPress(e));
+            }
+
+            handleKeyPress(e) {
+                const input = document.getElementById('currentInput');
+                if (!input) return;
+
+                switch(e.key) {
+                    case 'Enter':
+                        e.preventDefault();
+                        this.executeCommand(input.value);
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        this.navigateHistory(-1);
+                        break;
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        this.navigateHistory(1);
+                        break;
+                    case 'Tab':
+                        e.preventDefault();
+                        this.autoComplete();
+                        break;
+                }
+            }
+
+            executeCommand(command) {
+                if (!command.trim()) {
+                    this.addNewLine();
+                    return;
+                }
+
+                // Add command to history
+                this.commandHistory.push(command);
+                this.historyIndex = this.commandHistory.length;
+                this.commandCount++;
+
+                // Display command
+                this.displayCommand(command);
+
+                // Parse and execute command
+                const [cmd, ...args] = command.toLowerCase().trim().split(' ');
+                this.processCommand(cmd, args);
+
+                // Add new line for next command
+                this.addNewLine();
+
+                // Update command count
+                document.getElementById('commandCount').textContent = `${this.commandCount} commands`;
+            }
+
+            processCommand(cmd, args) {
+                const commands = {
+                    'help': () => this.showHelp(),
+                    'clear': () => this.clear(),
+                    'ls': () => this.listFiles(args),
+                    'cd': () => this.changeDirectory(args),
+                    'pwd': () => this.printWorkingDirectory(),
+                    'mkdir': () => this.makeDirectory(args),
+                    'touch': () => this.createFile(args),
+                    'cat': () => this.readFile(args),
+                    'echo': () => this.echo(args),
+                    'date': () => this.showDate(),
+                    'whoami': () => this.showUser(),
+                    'ps': () => this.showProcesses(),
+                    'neofetch': () => this.showSystemInfo(),
+                    'deploy': () => this.showDeployHelp(),
+                    'apps': () => this.listApps(),
+                    'status': () => this.showStatus(),
+                    'restart': () => this.restartService(args),
+                    'stop': () => this.stopService(args),
+                    'logs': () => this.showLogs(args),
+                    'config': () => this.showConfig(),
+                    'exit': () => this.exitTerminal(),
+                    'sudo': () => this.sudoCommand(args)
+                };
+
+                if (commands[cmd]) {
+                    commands[cmd]();
+                } else {
+                    this.printError(`Command not found: ${cmd}. Type 'help' for available commands.`);
+                }
+            }
+
+            showHelp() {
+                const helpText = `
+<span class="info-text">Available Commands:</span>
+
+<span class="success-text">System Commands:</span>
+  help        - Show this help message
+  clear       - Clear the terminal screen
+  exit        - Exit terminal
+  date        - Show current date and time
+  whoami      - Display current user
+  neofetch    - Display system information
+  status      - Show system status
+
+<span class="success-text">File Management:</span>
+  ls          - List directory contents
+  cd <dir>    - Change directory
+  pwd         - Print working directory
+  mkdir <dir> - Create new directory
+  touch <file>- Create new file
+  cat <file>  - Display file contents
+  echo <text> - Display text
+
+<span class="success-text">Application Management:</span>
+  apps        - List deployed applications
+  deploy      - Show deployment help
+  restart <app>- Restart application
+  stop <app>  - Stop application
+  logs <app>  - Show application logs
+
+<span class="success-text">Advanced:</span>
+  ps          - Show running processes
+  config      - Show configuration
+  sudo <cmd>  - Execute command with privileges
+
+<span class="help-text">Use arrow keys to navigate command history</span>
+                `;
+                this.print(helpText.trim());
+            }
+
+            clear() {
+                this.output.innerHTML = '';
+                this.addNewLine();
+            }
+
+            listFiles(args) {
+                const files = ['index.html', 'style.css', 'script.js', 'package.json', 'README.md', 'images/', 'node_modules/'];
+                const dirs = ['images', 'node_modules'];
+                
+                if (args.includes('-la') || args.includes('-l')) {
+                    files.forEach(file => {
+                        const isDir = dirs.includes(file.replace('/', ''));
+                        const icon = isDir ? '📁' : '📄';
+                        const color = isDir ? 'info-text' : 'success-text';
+                        this.print(`${icon} <span class="${color}">${file}</span>`);
+                    });
+                } else {
+                    const cols = Math.ceil(files.length / 3);
+                    let output = '';
+                    for (let i = 0; i < cols; i++) {
+                        let row = '';
+                        for (let j = i; j < files.length; j += cols) {
+                            const isDir = dirs.includes(files[j].replace('/', ''));
+                            const icon = isDir ? '📁' : '📄';
+                            row += `${icon} ${files[j].padEnd(20)}`;
+                        }
+                        output += row + '\n';
+                    }
+                    this.print(output.trim());
+                }
+            }
+
+            changeDirectory(args) {
+                if (args.length === 0) {
+                    this.currentDirectory = '~';
+                } else if (args[0] === '..') {
+                    this.currentDirectory = '~';
+                } else if (args[0] === '/' || args[0] === '~') {
+                    this.currentDirectory = '~';
+                } else {
+                    this.currentDirectory = `~/${args[0]}`;
+                }
+                this.updatePrompt();
+            }
+
+            printWorkingDirectory() {
+                this.printSuccess(this.currentDirectory);
+            }
+
+            makeDirectory(args) {
+                if (args.length === 0) {
+                    this.printError('Usage: mkdir <directory_name>');
+                    return;
+                }
+                this.printSuccess(`Directory '${args[0]}' created successfully`);
+            }
+
+            createFile(args) {
+                if (args.length === 0) {
+                    this.printError('Usage: touch <file_name>');
+                    return;
+                }
+                this.printSuccess(`File '${args[0]}' created successfully`);
+            }
+
+            readFile(args) {
+                if (args.length === 0) {
+                    this.printError('Usage: cat <file_name>');
+                    return;
+                }
+                
+                const fileContent = {
+                    'index.html': '<!DOCTYPE html>\n<html>\n<head><title>My App</title><script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>\n<body><h1>Hello World!</h1></body>\n</html>',
+                    'package.json': '{\n  "name": "my-app",\n  "version": "1.0.0",\n  "scripts": {\n    "start": "node server.js"\n  }\n}',
+                    'README.md': '# My Application\n\nThis is a sample application deployed on NtandoComputer.'
+                };
+                
+                const content = fileContent[args[0]] || `File '${args[0]}' not found or is empty`;
+                this.print(`<span class="help-text">${content}</span>`);
+            }
+
+            echo(args) {
+                this.print(args.join(' '));
+            }
+
+            showDate() {
+                const now = new Date();
+                this.print(now.toString());
+            }
+
+            showUser() {
+                this.printSuccess('ntando@computer');
+            }
+
+            showProcesses() {
+                const processes = [
+                    'PID  COMMAND           CPU   MEM',
+                    '1234 python-server    2.1%  45MB',
+                    '5678 node-app         1.8%  32MB',
+                    '9012 web-server       3.2%  67MB',
+                    '3456 database         5.1%  128MB'
+                ];
+                processes.forEach(process => this.print(process));
+            }
+
+            showSystemInfo() {
+                const info = `
+<span class="ascii-art">
+       _____       
+      /     \\      
+      | () |      
+      | {} |      
+      |_____|      
+</span>
+<span class="info-text">NtandoComputer Terminal</span>
+<span class="success-text">OS:</span> NtandoOS v1.0.0
+<span class="success-text">Kernel:</span> 5.15.0-ntando-generic
+<span class="success-text">Uptime:</span> 2 hours, 34 minutes
+<span class="success-text">Shell:</span> ntando-shell 1.0.0
+<span class="success-text">Resolution:</span> 1920x1080
+<span class="success-text">CPU:</span> Virtual CPU @ 2.4GHz
+<span class="success-text">Memory:</span> 512MB / 2GB
+<span class="success-text">Storage:</span> 15.2 GB / 50 GB
+                `;
+                this.print(info.trim());
+            }
+
+            listApps() {
+                this.printInfo('Deployed Applications:');
+                const apps = [
+                    '📄 my-website     (HTML)  • Running',
+                    '⚡ api-server     (Node.js) • Running',
+                    '📄 portfolio      (HTML)  • Stopped',
+                    '⚡ dashboard      (Node.js) • Running'
+                ];
+                apps.forEach(app => this.print(`  ${app}`));
+            }
+
+            showStatus() {
+                this.printInfo('System Status:');
+                this.printSuccess('  ✓ Server: Online');
+                this.printSuccess('  ✓ Database: Connected');
+                this.printSuccess('  ✓ Storage: Available');
+                this.printWarning('  ⚠ SSL: Expires in 30 days');
+                this.print(`  • Total Apps: ${this.commandCount}`);
+                this.print(`  • Memory Usage: 25%`);
+                this.print(`  • CPU Usage: 12%`);
+            }
+
+            showDeployHelp() {
+                this.printInfo('Deployment Commands:');
+                this.print('  deploy html     - Deploy HTML application');
+                this.print('  deploy nodejs   - Deploy Node.js application');
+                this.print('  deploy list     - List deployment templates');
+                this.print('  deploy status   - Show deployment status');
+            }
+
+            restartService(args) {
+                if (args.length === 0) {
+                    this.printError('Usage: restart <app_name>');
+                    return;
+                }
+                this.printSuccess(`Service '${args[0]}' restarted successfully`);
+            }
+
+            stopService(args) {
+                if (args.length === 0) {
+                    this.printError('Usage: stop <app_name>');
+                    return;
+                }
+                this.printSuccess(`Service '${args[0]}' stopped successfully`);
+            }
+
+            showLogs(args) {
+                const appName = args[0] || 'system';
+                this.printInfo(`Showing logs for: ${appName}`);
+                this.printHelp('[' + new Date().toISOString() + '] INFO: Server started successfully');
+                this.printHelp('[' + new Date().toISOString() + '] INFO: Database connected');
+                this.printSuccess('[' + new Date().toISOString() + '] INFO: Application ready');
+            }
+
+            showConfig() {
+                this.printInfo('Current Configuration:');
+                this.print('  Server Port: 8082');
+                this.print('  Database: PostgreSQL');
+                this.print('  Cache: Redis');
+                this.print('  Storage: Local Filesystem');
+                this.print('  Max Upload: 16MB');
+                this.print('  Log Level: INFO');
+            }
+
+            exitTerminal() {
+                this.printWarning('Exiting terminal...');
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1000);
+            }
+
+            sudoCommand(args) {
+                this.printWarning('🔒 Elevated privileges required');
+                if (args.length === 0) {
+                    this.printError('Usage: sudo <command>');
+                    return;
+                }
+                this.printSuccess(`Executing: sudo ${args.join(' ')}`);
+                // Simulate sudo command execution
+                setTimeout(() => {
+                    this.printSuccess('Command executed successfully');
+                }, 1000);
+            }
+
+            navigateHistory(direction) {
+                const input = document.getElementById('currentInput');
+                if (!input) return;
+
+                if (direction === -1 && this.historyIndex > 0) {
+                    this.historyIndex--;
+                    input.value = this.commandHistory[this.historyIndex];
+                } else if (direction === 1 && this.historyIndex < this.commandHistory.length - 1) {
+                    this.historyIndex++;
+                    input.value = this.commandHistory[this.historyIndex];
+                } else if (direction === 1) {
+                    this.historyIndex = this.commandHistory.length;
+                    input.value = '';
+                }
+                
+                // Move cursor to end
+                input.setSelectionRange(input.value.length, input.value.length);
+            }
+
+            autoComplete() {
+                const input = document.getElementById('currentInput');
+                if (!input) return;
+
+                const currentInput = input.value;
+                const commands = ['help', 'clear', 'ls', 'cd', 'pwd', 'mkdir', 'touch', 'cat', 'echo', 'date', 'whoami', 'ps', 'neofetch', 'deploy', 'apps', 'status', 'restart', 'stop', 'logs', 'config', 'exit', 'sudo'];
+                
+                const matches = commands.filter(cmd => cmd.startsWith(currentInput));
+                if (matches.length === 1) {
+                    input.value = matches[0];
+                } else if (matches.length > 1) {
+                    this.printInfo('Possible completions:');
+                    matches.forEach(match => this.print(`  ${match}`));
+                }
+            }
+
+            displayCommand(command) {
+                const line = document.createElement('div');
+                line.className = 'command-history';
+                line.innerHTML = `<span class="terminal-prompt">ntando@computer:${this.currentDirectory}$</span> ${command}`;
+                this.output.appendChild(line);
+                this.scrollToBottom();
+            }
+
+            print(text) {
+                const line = document.createElement('div');
+                line.className = 'terminal-output';
+                line.innerHTML = text;
+                this.output.appendChild(line);
+                this.scrollToBottom();
+            }
+
+            printSuccess(text) {
+                this.print(`<span class="success-text">${text}</span>`);
+            }
+
+            printError(text) {
+                this.print(`<span class="error-text">${text}</span>`);
+            }
+
+            printWarning(text) {
+                this.print(`<span class="warning-text">${text}</span>`);
+            }
+
+            printInfo(text) {
+                this.print(`<span class="info-text">${text}</span>`);
+            }
+
+            printHelp(text) {
+                this.print(`<span class="help-text">${text}</span>`);
+            }
+
+            addNewLine() {
+                const line = document.createElement('div');
+                line.className = 'terminal-line';
+                line.innerHTML = `
+                    <span class="terminal-prompt">ntando@computer:${this.currentDirectory}$</span>
+                    <input type="text" class="terminal-input" id="currentInput" autofocus>
+                    <span class="terminal-cursor"></span>
+                `;
+                this.output.appendChild(line);
+                
+                // Focus on input
+                const input = document.getElementById('currentInput');
+                input.focus();
+                
+                this.scrollToBottom();
+            }
+
+            updatePrompt() {
+                const prompts = document.querySelectorAll('.terminal-prompt');
+                prompts.forEach(prompt => {
+                    prompt.textContent = `ntando@computer:${this.currentDirectory}$`;
+                });
+            }
+
+            scrollToBottom() {
+                this.output.scrollTop = this.output.scrollHeight;
+            }
+
+            updateClock() {
+                const updateTime = () => {
+                    const now = new Date();
+                    const timeString = now.toLocaleTimeString();
+                    document.getElementById('currentTime').textContent = timeString;
+                };
+                
+                updateTime();
+                setInterval(updateTime, 1000);
+            }
+        }
+
+        // Global functions for button clicks
+        let terminal;
+
+        function clearTerminal() {
+            terminal.clear();
+        }
+
+        function showHelp() {
+            terminal.showHelp();
+        }
+
+        function showCommandHistory() {
+            terminal.printInfo('Command History:');
+            terminal.commandHistory.forEach((cmd, index) => {
+                terminal.print(`  ${index + 1}. ${cmd}`);
+            });
+        }
+
+        function closeTerminal() {
+            if (confirm('Are you sure you want to close the terminal?')) {
+                window.location.href = '/';
+            }
+        }
+
+        function minimizeTerminal() {
+            // In a real implementation, this would minimize the terminal
+            alert('Terminal minimized (feature coming soon!)');
+        }
+
+        // Initialize terminal when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            terminal = new Terminal();
+        });
+    </script>
+</body>
+</html>

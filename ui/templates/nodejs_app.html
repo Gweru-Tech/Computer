@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ app.name }} - Node.js Application</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .app-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .app-type {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .app-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 16px;
+            color: #28a745;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #28a745;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .info-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .info-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #333;
+            font-weight: bold;
+        }
+
+        .actions {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .actions h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #dee2e6;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .logs-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .logs-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .log-container {
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #00ff00;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-line {
+            margin-bottom: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .log-timestamp {
+            color: #666;
+        }
+
+        .log-info {
+            color: #4dabf7;
+        }
+
+        .log-success {
+            color: #51cf66;
+        }
+
+        .log-warning {
+            color: #ffd93d;
+        }
+
+        .log-error {
+            color: #ff6b6b;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            z-index: 100;
+        }
+
+        .back-link:hover {
+            background: white;
+            transform: translateY(-2px);
+        }
+
+        .placeholder-content {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .placeholder-icon {
+            font-size: 96px;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+
+        .placeholder-title {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #999;
+        }
+
+        .placeholder-description {
+            max-width: 400px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <a href="/apps" class="back-link">← Back to Apps</a>
+
+    <div class="container">
+        <header>
+            <div class="app-icon">⚡</div>
+            <h1>{{ app.name }}</h1>
+            <div class="app-type">Node.js Application</div>
+            <div class="app-status">
+                <div class="status-dot"></div>
+                <span>{{ app.status }}</span>
+            </div>
+        </header>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>📋 Application Details</h3>
+                <div class="info-item">
+                    <span class="info-label">Application ID:</span>
+                    <span class="info-value">{{ app.id }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Type:</span>
+                    <span class="info-value">{{ app.type }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value">{{ app.status }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Port:</span>
+                    <span class="info-value">{{ app.port }}</span>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3>⚙️ Runtime Configuration</h3>
+                <div class="info-item">
+                    <span class="info-label">Start Command:</span>
+                    <span class="info-value">{{ app.command }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Node.js Version:</span>
+                    <span class="info-value">v18.17.0</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Environment:</span>
+                    <span class="info-value">Production</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Memory Limit:</span>
+                    <span class="info-value">512 MB</span>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3>📊 Performance Metrics</h3>
+                <div class="performance-metrics">
+                    <div class="metric">
+                        <div class="metric-value">12%</div>
+                        <div class="metric-label">CPU Usage</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">45%</div>
+                        <div class="metric-label">Memory</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">1.2s</div>
+                        <div class="metric-label">Response Time</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">99.9%</div>
+                        <div class="metric-label">Uptime</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3>📅 Deployment Information</h3>
+                <div class="info-item">
+                    <span class="info-label">Deployed At:</span>
+                    <span class="info-value">{{ app.deployed_at }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Last Restart:</span>
+                    <span class="info-value">2 hours ago</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Total Restarts:</span>
+                    <span class="info-value">3</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Health Check:</span>
+                    <span class="info-value" style="color: #28a745;">Healthy</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <h2>Application Actions</h2>
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="restartApp()">🔄 Restart</button>
+                <button class="btn btn-secondary" onclick="rebuildApp()">🔨 Rebuild</button>
+                <button class="btn btn-secondary" onclick="viewLogs()">📄 View Logs</button>
+                <button class="btn btn-secondary" onclick="openTerminal()">⌨️ Terminal</button>
+                <button class="btn btn-secondary" onclick="viewMetrics()">📊 Metrics</button>
+                <button class="btn btn-danger" onclick="stopApp()">⏹️ Stop</button>
+            </div>
+        </div>
+
+        <div class="logs-section" id="logsSection" style="display: none;">
+            <h2>📄 Application Logs</h2>
+            <div class="log-container" id="logContainer">
+                <!-- Logs will be loaded here -->
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="refreshLogs()">🔄 Refresh Logs</button>
+                <button class="btn btn-secondary" onclick="downloadLogs()">⬇️ Download Logs</button>
+                <button class="btn btn-secondary" onclick="clearLogs()">🗑️ Clear Display</button>
+            </div>
+        </div>
+
+        <!-- Application Content Placeholder -->
+        <div class="placeholder-content" id="appContent">
+            <div class="placeholder-icon">⚡</div>
+            <div class="placeholder-title">Node.js Application</div>
+            <div class="placeholder-description">
+                This is a placeholder for your Node.js application. Your actual application would be served here if it had HTTP endpoints.
+                
+                <br><br>
+                <strong>Application Details:</strong><br>
+                • ID: {{ app.id }}<br>
+                • Name: {{ app.name }}<br>
+                • Status: {{ app.status }}<br>
+                • Port: {{ app.port }}<br>
+                • Deployed: {{ app.deployed_at }}
+                
+                <br><br>
+                To view your actual application content, ensure your Node.js server is properly configured and running.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let logCount = 0;
+        
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#667eea'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 2000;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        function restartApp() {
+            showNotification('Restarting application...', 'info');
+            
+            // Simulate restart process
+            setTimeout(() => {
+                showNotification('Application restarted successfully', 'success');
+                addLog('Application restarted by user', 'info');
+            }, 2000);
+        }
+
+        function rebuildApp() {
+            showNotification('Rebuilding application...', 'info');
+            
+            // Simulate rebuild process
+            setTimeout(() => {
+                showNotification('Application rebuilt successfully', 'success');
+                addLog('Application rebuilt by user', 'info');
+            }, 3000);
+        }
+
+        function stopApp() {
+            if (confirm('Are you sure you want to stop this application?')) {
+                showNotification('Stopping application...', 'info');
+                
+                setTimeout(() => {
+                    showNotification('Application stopped', 'success');
+                    addLog('Application stopped by user', 'warning');
+                    document.querySelector('.app-status span').textContent = 'Stopped';
+                    document.querySelector('.status-dot').style.background = '#dc3545';
+                }, 1500);
+            }
+        }
+
+        function viewLogs() {
+            const logsSection = document.getElementById('logsSection');
+            const appContent = document.getElementById('appContent');
+            
+            logsSection.style.display = logsSection.style.display === 'none' ? 'block' : 'none';
+            appContent.style.display = logsSection.style.display === 'block' ? 'none' : 'block';
+            
+            if (logsSection.style.display === 'block') {
+                loadLogs();
+            }
+        }
+
+        function loadLogs() {
+            const logContainer = document.getElementById('logContainer');
+            logContainer.innerHTML = '';
+            
+            // Simulate loading logs
+            const sampleLogs = [
+                { timestamp: new Date().toISOString(), level: 'info', message: 'Application server started on port {{ app.port }}' },
+                { timestamp: new Date().toISOString(), level: 'success', message: 'Database connection established' },
+                { timestamp: new Date().toISOString(), level: 'info', message: 'Middleware loaded successfully' },
+                { timestamp: new Date().toISOString(), level: 'info', message: 'Routes registered' },
+                { timestamp: new Date().toISOString(), level: 'success', message: 'Application ready to serve requests' }
+            ];
+            
+            sampleLogs.forEach(log => {
+                addLog(log.message, log.level, log.timestamp);
+            });
+        }
+
+        function addLog(message, level = 'info', timestamp = null) {
+            const logContainer = document.getElementById('logContainer');
+            const logLine = document.createElement('div');
+            logLine.className = 'log-line';
+            
+            const time = timestamp || new Date().toISOString();
+            const levelClass = `log-${level}`;
+            
+            logLine.innerHTML = `<span class="log-timestamp">[${time}]</span> <span class="${levelClass}">[${level.toUpperCase()}]</span> ${message}`;
+            
+            logContainer.appendChild(logLine);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            logCount++;
+            
+            // Limit logs to prevent memory issues
+            if (logCount > 100) {
+                logContainer.removeChild(logContainer.firstChild);
+                logCount--;
+            }
+        }
+
+        function refreshLogs() {
+            addLog('Logs refreshed by user', 'info');
+            showNotification('Logs refreshed', 'success');
+        }
+
+        function downloadLogs() {
+            showNotification('Downloading logs...', 'info');
+            
+            // Simulate download
+            setTimeout(() => {
+                showNotification('Logs downloaded successfully', 'success');
+            }, 1000);
+        }
+
+        function clearLogs() {
+            const logContainer = document.getElementById('logContainer');
+            logContainer.innerHTML = '';
+            logCount = 0;
+            showNotification('Logs cleared from display', 'info');
+        }
+
+        function openTerminal() {
+            window.open('/terminal', '_blank');
+        }
+
+        function viewMetrics() {
+            // In a real implementation, this would show detailed metrics
+            alert('Detailed metrics view coming soon!');
+        }
+
+        // Simulate real-time log updates
+        function simulateRealtimeLogs() {
+            const messages = [
+                { message: 'Health check passed', level: 'success' },
+                { message: 'Cache cleared', level: 'info' },
+                { message: 'Request processed', level: 'info' },
+                { message: 'Database ping successful', level: 'success' }
+            ];
+            
+            setInterval(() => {
+                if (document.getElementById('logsSection').style.display !== 'none') {
+                    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                    addLog(randomMessage.message, randomMessage.level);
+                }
+            }, 10000); // Add log every 10 seconds
+        }
+
+        // Add animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize real-time logs
+        simulateRealtimeLogs();
+    </script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+# Universal Deployment Configuration
+# Compatible with: Render.com, Heroku, AWS, Azure, GCP, Docker, VPS
+
+services:
+  # Universal Web Service
+  - type: web
+    name: ntandocomputer-universal
+    env: python
+    plan: free  # Can be: free, starter, standard
+    runtime: python3.11
+    
+    # Build Configuration
+    buildCommand: pip install -r requirements_universal.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 computer_enhanced:app
+    
+    # Health Checks
+    healthCheck:
+      path: /api/system/info
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+      successThreshold: 1
+    
+    # Environment Variables
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: FLASK_ENV
+        value: production
+      - key: DEPLOYMENT_ENV
+        value: universal
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 10000  # Default for most platforms
+      - key: STORAGE_PATH
+        value: /app/storage
+      - key: DATABASE_PATH
+        value: /app/ntando_computer_universal.db
+      - key: SECRET_KEY
+        generateValue: true
+      - key: MAX_CONTENT_LENGTH
+        value: 104857600  # 100MB
+    
+    # Persistent Storage
+    disk:
+      name: ntandocomputer-universal-storage
+      mountPath: /app/storage
+      sizeGB: 10  # Can be increased based on plan
+    
+    # Auto-scaling (for paid plans)
+    autoDeploy: false  # Set to true for automatic deployments
+    scaling:
+      minInstances: 1
+      maxInstances: 3
+      targetMemoryPercent: 70
+      targetCPUPercent: 70
+
+# Environment-specific configurations
+environments:
+  render:
+    platform: render.com
+    region: oregon
+    plan: free
+    
+  heroku:
+    platform: heroku.com
+    buildpacks:
+      - heroku/python
+    config_vars:
+      WEB_CONCURRENCY: 1
+      
+  aws:
+    platform: aws
+    service: elastic-beanstalk
+    instance_type: t2.micro
+    
+  azure:
+    platform: azure
+    service: app-service
+    sku: B1
+    
+  gcp:
+    platform: google-cloud
+    service: app-engine
+    instance_class: F1
+    
+  docker:
+    platform: docker
+    base_image: python:3.11-slim
+    expose_ports: [5001]
+    
+  vps:
+    platform: vps
+    os: ubuntu-22.04
+    ram_min: 512MB
+    disk_min: 10GB
+
+# Post-deployment hooks
+hooks:
+  postBuild:
+    - python -c "import sqlite3; print('Database ready')"
+  postDeploy:
+    - echo "NtandoComputer Universal deployed successfully"
